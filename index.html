@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kitchen Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Kitchen Order Dashboard</h1>
+    <p>Live orders grouped by booking and course.</p>
+  </header>
+
+  <main id="dashboard" aria-live="polite">
+    <section class="booking" data-booking="B-001">
+      <h2>Booking B-001</h2>
+      <div class="course" data-course="Starter">
+        <h3>Starter</h3>
+        <ul>
+          <li>
+            <span>Garlic Bread x2</span>
+            <button class="sent" data-order="1">Mark sent</button>
+          </li>
+          <li>
+            <span>Tomato Bruschetta x1</span>
+            <button class="sent" data-order="2">Mark sent</button>
+          </li>
+        </ul>
+      </div>
+      <div class="course" data-course="Main">
+        <h3>Main</h3>
+        <ul>
+          <li>Margherita Pizza x1</li>
+          <li>Spaghetti Carbonara x2</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
