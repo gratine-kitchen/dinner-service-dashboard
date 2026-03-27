@@ -6,6 +6,12 @@ const API_BASE_URL =
     : 'https://dinner-service-backend-deoi.onrender.com';  // Production
 
 const dashboard = document.getElementById('dashboard');
+const headerDate = document.getElementById('header-date');
+
+function updateHeaderDate(selectedDate) {
+  if (!headerDate) return;
+  headerDate.textContent = selectedDate ? formatDate(selectedDate) : 'Kitchen order management system';
+}
 
 function showLoading() {
   dashboard.innerHTML = '<div class="loading">Loading orders...</div>';
@@ -48,20 +54,13 @@ async function markItemSent(bookingId, course, itemIndex) {
 
 function renderOrders(orders, selectedDate) {
   if (!orders || orders.length === 0) {
+    updateHeaderDate(selectedDate);
     dashboard.innerHTML = '<p>No orders for this date.</p>';
     return;
   }
 
   dashboard.innerHTML = '';
-
-  // Add date header
-  const dateHeader = document.createElement('div');
-  dateHeader.className = 'date-header';
-  dateHeader.innerHTML = `
-    <h2>Today's Bookings</h2>
-    <p>${formatDate(selectedDate)}</p>
-  `;
-  dashboard.appendChild(dateHeader);
+  updateHeaderDate(selectedDate);
 
   orders.forEach((booking) => {
     const bookingSection = document.createElement('section');
