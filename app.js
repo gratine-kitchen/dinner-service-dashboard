@@ -24,6 +24,28 @@ function formatDate(dateStr) {
   return date.toLocaleDateString('en-US', options);
 }
 
+async function markItemSent(bookingId, course, itemIndex) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/orders/${bookingId}/courses/${encodeURIComponent(course)}/items/${itemIndex}/sent`, {
+      method: 'POST'
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const result = await response.json();
+    if (result.success) {
+      // Reload orders to show updated state
+      await loadOrders();
+    } else {
+      console.error('Failed to mark item as sent:', result.error);
+    }
+  } catch (error) {
+    console.error('Error marking item as sent:', error);
+  }
+}
+
 function renderOrders(orders, selectedDate) {
   if (!orders || orders.length === 0) {
     dashboard.innerHTML = '<p>No orders for this date.</p>';
@@ -35,30 +57,52 @@ function renderOrders(orders, selectedDate) {
   // Add date header
   const dateHeader = document.createElement('div');
   dateHeader.className = 'date-header';
-  dateHeader.innerHTML = `<h2>Orders for ${formatDate(selectedDate)}</h2>`;
+  dateHeader.innerHTML = `
+    <h2>Today's Bookings</h2>
+    <p>${formatDate(selectedDate)}</p>
+  `;
   dashboard.appendChild(dateHeader);
 
   orders.forEach((booking) => {
     const bookingSection = document.createElement('section');
     bookingSection.className = 'booking';
 
+    // Booking header
     const header = document.createElement('div');
     header.className = 'booking-header';
     header.innerHTML = `
-      <h2>${booking.guestName} - Booking ${booking.bookingId}</h2>
-      <p><strong>Time:</strong> ${booking.time || 'TBD'} | <strong>Guests:</strong> ${booking.numGuests || 0}</p>
-      ${booking.remarks ? `<p><strong>Remarks:</strong> ${booking.remarks}</p>` : ''}
-      ${booking.specialRequest ? `<p><strong>Special Request:</strong> ${booking.specialRequest}</p>` : ''}
+      <div class="booking-title-row">
+        <h2>${booking.guestName}</h2>
+        <span class="booking-id">#${booking.bookingId}</span>
+      </div>
+      <div class="meta">
+        <span class="meta-item">${booking.time || 'TBD'}</span>
+        <span class="meta-dot" aria-hidden="true"></span>
+        <span class="meta-item">${booking.numGuests || 0} guests</span>
+      </div>
     `;
     bookingSection.appendChild(header);
 
+    // Special requests section (if any)
+    const hasSpecialRequests = booking.specialRequest || booking.remarks;
+    if (hasSpecialRequests) {
+      const specialDiv = document.createElement('div');
+      specialDiv.className = 'special-requests';
+      specialDiv.innerHTML = `
+        <h4>Special Requests</h4>
+        <p>${booking.specialRequest || booking.remarks}</p>
+      `;
+      bookingSection.appendChild(specialDiv);
+    }
+
+    // Course sections
     Object.entries(booking.courses || {}).forEach(([course, items]) => {
       const courseDiv = document.createElement('div');
       courseDiv.className = 'course';
       courseDiv.dataset.course = course;
 
       const title = document.createElement('h3');
-      title.textContent = course;
+      title.textContent = course.toUpperCase();
       courseDiv.appendChild(title);
 
       const list = document.createElement('ul');
@@ -66,14 +110,33 @@ function renderOrders(orders, selectedDate) {
         const li = document.createElement('li');
         if (item.sent) li.classList.add('completed');
 
-        const itemText = document.createElement('span');
-        itemText.textContent = `${item.dish} x${item.qty}`;
-        li.appendChild(itemText);
+        const mainLine = document.createElement('div');
+        mainLine.className = 'item-main';
 
+        const quantity = document.createElement('span');
+        quantity.className = 'item-quantity';
+        quantity.textContent = `${item.qty}x`;
+        mainLine.appendChild(quantity);
+
+        const name = document.createElement('span');
+        name.className = 'item-name';
+        name.textContent = item.dish;
+        mainLine.appendChild(name);
+
+        if (item.sent) {
+          const sentTag = document.createElement('span');
+          sentTag.className = 'sent-tag';
+          sentTag.textContent = 'Sent';
+          mainLine.appendChild(sentTag);
+        }
+
+        li.appendChild(mainLine);
+
+        // Notes/remarks
         if (item.remarks) {
-          const notes = document.createElement('span');
-          notes.className = 'remarks';
-          notes.textContent = `(${item.remarks})`;
+          const notes = document.createElement('div');
+          notes.className = 'item-notes';
+          notes.textContent = item.remarks;
           li.appendChild(notes);
         }
 
@@ -109,3 +172,12 @@ async function loadOrders() {
 }
 
 document.addEventListener('DOMContentLoaded', loadOrders);
+
+// Keep backend alive by pinging it every 10 minutes (only in production)
+if (API_BASE_URL.includes('render.com')) {
+  setInterval(() => {
+    fetch(`${API_BASE_URL}/api/status`).catch(() => {
+      // Silent fail - this is just a keep-alive ping
+    });
+  }, 10 * 60 * 1000);
+}
