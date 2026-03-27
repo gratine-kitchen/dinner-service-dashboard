@@ -1,5 +1,5 @@
 // app.js
-const API_BASE_URL = 'http://localhost:3000';
+const API_BASE_URL = 'https://dinner-service-backend-deoi.onrender.com';
 const dashboard = document.getElementById('dashboard');
 
 function showLoading() {
