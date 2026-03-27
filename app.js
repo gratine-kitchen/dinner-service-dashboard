@@ -1,5 +1,10 @@
 // app.js
-const API_BASE_URL = 'https://dinner-service-backend-deoi.onrender.com';
+// Detect environment and set API_BASE_URL accordingly
+const API_BASE_URL = 
+  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:3000'  // Development
+    : 'https://dinner-service-backend-deoi.onrender.com';  // Production
+
 const dashboard = document.getElementById('dashboard');
 
 function showLoading() {
