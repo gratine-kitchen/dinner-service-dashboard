@@ -10,13 +10,28 @@ function showError(message) {
   dashboard.innerHTML = `<div class="error-message">${message}</div>`;
 }
 
-function renderOrders(orders) {
+function formatDate(dateStr) {
+  if (!dateStr) return 'Today';
+  // dateStr format: YYYY-MM-DD
+  const [year, month, day] = dateStr.split('-');
+  const date = new Date(year, parseInt(month) - 1, day);
+  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  return date.toLocaleDateString('en-US', options);
+}
+
+function renderOrders(orders, selectedDate) {
   if (!orders || orders.length === 0) {
-    dashboard.innerHTML = '<p>No orders available.</p>';
+    dashboard.innerHTML = '<p>No orders for this date.</p>';
     return;
   }
 
   dashboard.innerHTML = '';
+
+  // Add date header
+  const dateHeader = document.createElement('div');
+  dateHeader.className = 'date-header';
+  dateHeader.innerHTML = `<h2>Orders for ${formatDate(selectedDate)}</h2>`;
+  dashboard.appendChild(dateHeader);
 
   orders.forEach((booking) => {
     const bookingSection = document.createElement('section');
@@ -71,7 +86,7 @@ async function loadOrders() {
   showLoading();
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/orders`);
+    const response = await fetch(`${API_BASE_URL}/api/orders/upcoming`);
     if (!response.ok) {
       throw new Error(`HTTP ${response.status} ${response.statusText}`);
     }
@@ -81,7 +96,7 @@ async function loadOrders() {
       throw new Error(payload.error || 'API returned an error');
     }
 
-    renderOrders(payload.data);
+    renderOrders(payload.data, payload.selectedDate);
   } catch (error) {
     console.error('Failed to load orders', error);
     showError(`Unable to load orders: ${error.message}`);

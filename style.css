@@ -19,6 +19,20 @@ main {
   padding: 0 1rem 2rem;
 }
 
+.date-header {
+  background: #e8f0f7;
+  border-left: 4px solid #2d3f64;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 4px;
+}
+
+.date-header h2 {
+  margin: 0;
+  color: #2d3f64;
+  font-size: 1.3rem;
+}
+
 .booking {
   border: 1px solid #d8dee9;
   border-radius: 8px;
@@ -116,4 +130,11 @@ button.sent:disabled {
   color: #c33;
   text-align: center;
   font-size: 1.1rem;
+}
+
+.loading {
+  padding: 2rem;
+  text-align: center;
+  color: #666;
+  font-size: 1rem;
 }
