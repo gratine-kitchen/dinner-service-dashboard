@@ -70,13 +70,17 @@ function renderOrders(orders, selectedDate) {
     const numAdults = Number.isFinite(Number(booking.numGuests)) ? Number(booking.numGuests) : 0;
     const numKids = Number.isFinite(Number(booking.numKids)) ? Number(booking.numKids) : 0;
     const totalGuests = numAdults + numKids;
+    const bookingRemarks = typeof booking.remarks === 'string' ? booking.remarks.trim() : '';
+    const guestTitle = bookingRemarks
+      ? `${booking.guestName} (${bookingRemarks})`
+      : booking.guestName;
 
     // Booking header
     const header = document.createElement('div');
     header.className = 'booking-header';
     header.innerHTML = `
       <div class="booking-title-row">
-        <h2>${booking.guestName}</h2>
+        <h2>${guestTitle}</h2>
       </div>
       <div class="meta">
         <span class="meta-item">${booking.time || 'TBD'}</span>
