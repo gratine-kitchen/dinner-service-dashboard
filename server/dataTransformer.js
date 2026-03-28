@@ -52,7 +52,8 @@ async function transformOrderData(bookingsRows, menuForBookingRows, menuItemsRow
       remarks: order.Remarks || '',
       sent: order.Status === 'Sent' || false,
       upgradeWaived: parseBooleanValue(order.UpgradeWaived),
-      complimentary: parseBooleanValue(order.Complimentary)
+      complimentary: parseBooleanValue(order.Complimentary),
+      upgradePrice: parseUpgradePrice(courseInfo?.UpgradePrice)
     });
   }
 
@@ -84,6 +85,12 @@ function parseBooleanValue(rawValue) {
   if (rawValue === '' || rawValue == null) return false;
   const str = String(rawValue).trim().toLowerCase();
   return str === 'true' || str === '1' || str === 'yes';
+}
+
+function parseUpgradePrice(rawValue) {
+  if (rawValue === '' || rawValue == null) return null;
+  const parsed = parseFloat(String(rawValue).replace(/[^0-9.]/g, ''));
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function rowsToObjects(rows) {

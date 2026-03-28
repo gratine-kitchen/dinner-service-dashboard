@@ -225,6 +225,15 @@ main {
   color: var(--text-primary);
 }
 
+.item-upgrade-price {
+  color: var(--warning);
+}
+
+.item-upgrade-price-waived {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
 .item-main {
   display: flex;
   align-items: center;

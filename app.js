@@ -157,10 +157,32 @@ function renderOrders(orders, selectedDate) {
 
       const name = document.createElement('span');
       name.className = 'item-name';
-      let displayName = item.dish;
-      if (item.complimentary) displayName += ' 🎁';
-      if (item.upgradeWaived) displayName += ' 🆓';
-      name.textContent = displayName;
+      const upgradePrice = Number(item.upgradePrice);
+
+      const nameText = document.createTextNode(item.dish);
+      name.appendChild(nameText);
+
+      if (Number.isFinite(upgradePrice) && upgradePrice > 0) {
+        const formattedUpgradePrice = Number.isInteger(upgradePrice)
+          ? String(upgradePrice)
+          : upgradePrice.toFixed(2);
+
+        const price = document.createElement('span');
+        price.className = 'item-upgrade-price';
+        if (item.complimentary || item.upgradeWaived) {
+          price.classList.add('item-upgrade-price-waived');
+        }
+        price.textContent = ` (+$${formattedUpgradePrice})`;
+        name.appendChild(price);
+      }
+
+      if (item.complimentary) {
+        name.appendChild(document.createTextNode(' 🎁'));
+      }
+      if (item.upgradeWaived) {
+        name.appendChild(document.createTextNode(' 🆓'));
+      }
+
       mainLine.appendChild(name);
 
       if (item.sent) {
