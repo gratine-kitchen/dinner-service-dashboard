@@ -93,64 +93,91 @@ function renderOrders(orders, selectedDate) {
       header.appendChild(specialDiv);
     }
 
-    // Course sections
+    // Flatten all items from all courses and sort globally by order
+    const allItems = [];
     Object.entries(booking.courses || {}).forEach(([course, items]) => {
-      const courseDiv = document.createElement('div');
-      courseDiv.className = 'course';
-      courseDiv.dataset.course = course;
-
-      const title = document.createElement('h3');
-      title.textContent = course.toUpperCase();
-      courseDiv.appendChild(title);
-
-      const list = document.createElement('ul');
       items.forEach((item) => {
-        const li = document.createElement('li');
-        if (item.sent) li.classList.add('completed');
-
-        const mainLine = document.createElement('div');
-        mainLine.className = 'item-main';
-
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.className = 'item-checkbox';
-        checkbox.setAttribute('aria-label', `Mark ${item.dish} as done`);
-        checkbox.addEventListener('change', () => {
-          li.classList.toggle('checked-off', checkbox.checked);
-        });
-        mainLine.appendChild(checkbox);
-
-        const quantity = document.createElement('span');
-        quantity.className = 'item-quantity';
-        quantity.textContent = `${item.qty}x`;
-        mainLine.appendChild(quantity);
-
-        const name = document.createElement('span');
-        name.className = 'item-name';
-        name.textContent = item.dish;
-        mainLine.appendChild(name);
-
-        if (item.sent) {
-          const sentTag = document.createElement('span');
-          sentTag.className = 'sent-tag';
-          sentTag.textContent = 'Sent';
-          mainLine.appendChild(sentTag);
-        }
-
-        li.appendChild(mainLine);
-
-        // Notes/remarks
-        if (item.remarks) {
-          const notes = document.createElement('div');
-          notes.className = 'item-notes';
-          notes.textContent = item.remarks;
-          li.appendChild(notes);
-        }
-
-        list.appendChild(li);
+        allItems.push({ ...item, course });
       });
-      courseDiv.appendChild(list);
-      bookingSection.appendChild(courseDiv);
+    });
+
+    // Sort all items globally by order field
+    allItems.sort((a, b) => {
+      const aOrder = a.order;
+      const bOrder = b.order;
+
+      if (aOrder == null && bOrder == null) return 0;
+      if (aOrder == null) return 1;
+      if (bOrder == null) return -1;
+      return aOrder - bOrder;
+    });
+
+    // Render items in globally sorted order, with course headers when course changes
+    let currentCourse = null;
+    let courseDiv = null;
+    let list = null;
+
+    allItems.forEach((item) => {
+      // If course changed, create a new course section
+      if (item.course !== currentCourse) {
+        currentCourse = item.course;
+        courseDiv = document.createElement('div');
+        courseDiv.className = 'course';
+        courseDiv.dataset.course = currentCourse;
+
+        const title = document.createElement('h3');
+        title.textContent = currentCourse.toUpperCase();
+        courseDiv.appendChild(title);
+
+        list = document.createElement('ul');
+        courseDiv.appendChild(list);
+        bookingSection.appendChild(courseDiv);
+      }
+
+      // Add item to the current course's list
+      const li = document.createElement('li');
+      if (item.sent) li.classList.add('completed');
+
+      const mainLine = document.createElement('div');
+      mainLine.className = 'item-main';
+
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.className = 'item-checkbox';
+      checkbox.setAttribute('aria-label', `Mark ${item.dish} as done`);
+      checkbox.addEventListener('change', () => {
+        li.classList.toggle('checked-off', checkbox.checked);
+      });
+      mainLine.appendChild(checkbox);
+
+      const quantity = document.createElement('span');
+      quantity.className = 'item-quantity';
+      quantity.textContent = `${item.qty}x`;
+      mainLine.appendChild(quantity);
+
+      const name = document.createElement('span');
+      name.className = 'item-name';
+      name.textContent = item.dish;
+      mainLine.appendChild(name);
+
+      if (item.sent) {
+        const sentTag = document.createElement('span');
+        sentTag.className = 'sent-tag';
+        sentTag.textContent = 'Sent';
+        mainLine.appendChild(sentTag);
+      }
+
+      li.appendChild(mainLine);
+
+      // Notes/remarks
+      if (item.remarks) {
+        const notes = document.createElement('div');
+        notes.className = 'item-notes';
+        notes.textContent = item.remarks;
+        li.appendChild(notes);
+      }
+
+      list.appendChild(li);
     });
 
     dashboard.appendChild(bookingSection);

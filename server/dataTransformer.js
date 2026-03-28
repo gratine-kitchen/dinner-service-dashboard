@@ -48,12 +48,34 @@ async function transformOrderData(bookingsRows, menuForBookingRows, menuItemsRow
     bookingOrders[order.Booking].courses[course].push({
       dish: dish,
       qty: order.Qty || 1,
+      order: parseOrderValue(order.Order),
       remarks: order.Remarks || '',
       sent: order.Status === 'Sent' || false
     });
   }
+
+  // Sort dishes by MenuForBooking.Order (ascending) within each course
+  Object.values(bookingOrders).forEach((booking) => {
+    Object.values(booking.courses).forEach((items) => {
+      items.sort((a, b) => {
+        const aOrder = a.order;
+        const bOrder = b.order;
+
+        if (aOrder == null && bOrder == null) return 0;
+        if (aOrder == null) return 1;
+        if (bOrder == null) return -1;
+        return aOrder - bOrder;
+      });
+    });
+  });
   
   return Object.values(bookingOrders);
+}
+
+function parseOrderValue(rawOrder) {
+  if (rawOrder === '' || rawOrder == null) return null;
+  const parsed = Number(rawOrder);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function rowsToObjects(rows) {
