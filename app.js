@@ -7,6 +7,7 @@ const API_BASE_URL =
 
 const dashboard = document.getElementById('dashboard');
 const headerDate = document.getElementById('header-date');
+const appVersion = document.getElementById('app-version');
 
 function updateHeaderDate(selectedDate) {
   if (!headerDate) return;
@@ -19,6 +20,28 @@ function showLoading() {
 
 function showError(message) {
   dashboard.innerHTML = `<div class="error-message">${message}</div>`;
+}
+
+function setVersionText(version, build) {
+  if (!appVersion) return;
+  appVersion.textContent = `Version: ${version} (${build})`;
+}
+
+async function loadVersionInfo() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/status`);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const payload = await response.json();
+    const version = payload.version || 'unknown';
+    const build = payload.build || 'unknown';
+    setVersionText(version, build);
+  } catch (error) {
+    console.error('Failed to load version info', error);
+    setVersionText('unknown', 'unknown');
+  }
 }
 
 function formatDate(dateStr) {
@@ -243,7 +266,10 @@ async function loadOrders() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', loadOrders);
+document.addEventListener('DOMContentLoaded', () => {
+  loadOrders();
+  loadVersionInfo();
+});
 
 // Keep backend alive by pinging it every 10 minutes (only in production)
 if (API_BASE_URL.includes('render.com')) {

@@ -1,13 +1,37 @@
 // server/server.js
 require('dotenv').config();
 
+const path = require('path');
+const { execSync } = require('child_process');
 const express = require('express');
 const cors = require('cors');
 const { getSheetData, initializeAuth } = require('./sheetsClient');
 const { transformOrderData } = require('./dataTransformer');
+const packageJson = require('./package.json');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const BUILD_INFO = getBuildInfo();
+
+function getBuildInfo() {
+  const version = process.env.APP_VERSION || packageJson.version || '0.0.0';
+
+  if (process.env.APP_BUILD) {
+    return { version, build: process.env.APP_BUILD };
+  }
+
+  try {
+    const repoRoot = path.resolve(__dirname, '..');
+    const gitSha = execSync('git rev-parse --short HEAD', {
+      cwd: repoRoot,
+      stdio: ['ignore', 'pipe', 'ignore']
+    }).toString().trim();
+
+    return { version, build: gitSha || 'dev' };
+  } catch {
+    return { version, build: 'dev' };
+  }
+}
 
 // Middleware
 app.use(cors());
@@ -160,6 +184,8 @@ app.get('/api/orders/upcoming', async (req, res) => {
 app.get('/api/status', (req, res) => {
   res.json({
     status: 'OK',
+    version: BUILD_INFO.version,
+    build: BUILD_INFO.build,
     timestamp: new Date().toISOString()
   });
 });
