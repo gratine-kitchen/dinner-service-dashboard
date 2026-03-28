@@ -218,11 +218,13 @@ main {
   font-weight: 600;
   color: var(--text-primary);
   margin-right: var(--space-2);
+  cursor: pointer;
 }
 
 .item-name {
   font-weight: 500;
   color: var(--text-primary);
+  cursor: pointer;
 }
 
 .item-upgrade-price {

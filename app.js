@@ -61,6 +61,7 @@ function renderOrders(orders, selectedDate) {
 
   dashboard.innerHTML = '';
   updateHeaderDate(selectedDate);
+  let checkboxIdCounter = 0;
 
   orders.forEach((booking) => {
     const bookingSection = document.createElement('section');
@@ -144,19 +145,22 @@ function renderOrders(orders, selectedDate) {
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
       checkbox.className = 'item-checkbox';
+      checkbox.id = `dish-check-${checkboxIdCounter++}`;
       checkbox.setAttribute('aria-label', `Mark ${item.dish} as done`);
       checkbox.addEventListener('change', () => {
         li.classList.toggle('checked-off', checkbox.checked);
       });
       mainLine.appendChild(checkbox);
 
-      const quantity = document.createElement('span');
+      const quantity = document.createElement('label');
       quantity.className = 'item-quantity';
+      quantity.htmlFor = checkbox.id;
       quantity.textContent = `${item.qty}x`;
       mainLine.appendChild(quantity);
 
-      const name = document.createElement('span');
+      const name = document.createElement('label');
       name.className = 'item-name';
+      name.htmlFor = checkbox.id;
       const upgradePrice = Number(item.upgradePrice);
 
       const nameText = document.createTextNode(item.dish);
