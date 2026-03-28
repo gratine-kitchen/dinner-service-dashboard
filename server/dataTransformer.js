@@ -50,7 +50,9 @@ async function transformOrderData(bookingsRows, menuForBookingRows, menuItemsRow
       qty: order.Qty || 1,
       order: parseOrderValue(order.Order),
       remarks: order.Remarks || '',
-      sent: order.Status === 'Sent' || false
+      sent: order.Status === 'Sent' || false,
+      upgradeWaived: parseBooleanValue(order.UpgradeWaived),
+      complimentary: parseBooleanValue(order.Complimentary)
     });
   }
 
@@ -76,6 +78,12 @@ function parseOrderValue(rawOrder) {
   if (rawOrder === '' || rawOrder == null) return null;
   const parsed = Number(rawOrder);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseBooleanValue(rawValue) {
+  if (rawValue === '' || rawValue == null) return false;
+  const str = String(rawValue).trim().toLowerCase();
+  return str === 'true' || str === '1' || str === 'yes';
 }
 
 function rowsToObjects(rows) {

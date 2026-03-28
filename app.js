@@ -157,7 +157,10 @@ function renderOrders(orders, selectedDate) {
 
       const name = document.createElement('span');
       name.className = 'item-name';
-      name.textContent = item.dish;
+      let displayName = item.dish;
+      if (item.complimentary) displayName += ' 🎁';
+      if (item.upgradeWaived) displayName += ' 🆓';
+      name.textContent = displayName;
       mainLine.appendChild(name);
 
       if (item.sent) {
