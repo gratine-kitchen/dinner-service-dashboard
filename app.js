@@ -67,6 +67,10 @@ function renderOrders(orders, selectedDate) {
     const bookingSection = document.createElement('section');
     bookingSection.className = 'booking';
 
+    const numAdults = Number.isFinite(Number(booking.numGuests)) ? Number(booking.numGuests) : 0;
+    const numKids = Number.isFinite(Number(booking.numKids)) ? Number(booking.numKids) : 0;
+    const totalGuests = numAdults + numKids;
+
     // Booking header
     const header = document.createElement('div');
     header.className = 'booking-header';
@@ -77,7 +81,7 @@ function renderOrders(orders, selectedDate) {
       <div class="meta">
         <span class="meta-item">${booking.time || 'TBD'}</span>
         <span class="meta-dot" aria-hidden="true"></span>
-        <span class="meta-item">${booking.numGuests || 0} guests</span>
+        <span class="meta-item">${totalGuests} guests (${numAdults} adults, ${numKids} kids)</span>
       </div>
     `;
     bookingSection.appendChild(header);

@@ -25,6 +25,7 @@ async function transformOrderData(bookingsRows, menuForBookingRows, menuItemsRow
       session: booking.Session || '',
       time: booking.Time || '',
       numGuests: booking.NumGuests || 0,
+      numKids: parseIntegerValue(booking.NumKids, 0),
       remarks: booking.Remarks || '',
       specialRequest: booking.SpecialRequest || '',
       courses: {}
@@ -91,6 +92,12 @@ function parseUpgradePrice(rawValue) {
   if (rawValue === '' || rawValue == null) return null;
   const parsed = parseFloat(String(rawValue).replace(/[^0-9.]/g, ''));
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseIntegerValue(rawValue, fallback = 0) {
+  if (rawValue === '' || rawValue == null) return fallback;
+  const parsed = Number(rawValue);
+  return Number.isInteger(parsed) ? parsed : fallback;
 }
 
 function rowsToObjects(rows) {

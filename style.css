@@ -61,7 +61,7 @@ body {
 }
 
 header {
-  background: linear-gradient(180deg, #111827 0%, #0f172a 100%);
+  background: linear-gradient(180deg, #1E3E62 0%, #1E3E88 100%);
   border-bottom: 1px solid var(--border);
   padding: var(--space-4) var(--space-4);
   text-align: center;
@@ -71,13 +71,13 @@ header h1 {
   margin: 0 0 var(--space-1) 0;
   font-size: var(--font-size-xl); /* 18px */
   font-weight: 700;
-  color: var(--accent);
+  color: #fff;
 }
 
 header p {
   margin: 0;
   font-size: var(--font-size-base); /* 14px */
-  color: var(--text-secondary);
+  color: #fff;
 }
 
 main {
