@@ -31,7 +31,7 @@
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.625rem;
-  --space-4: 0.875rem;
+  --space-4: 0.475rem;
   --space-5: 1rem;
   --space-6: 1.125rem;
 
@@ -238,12 +238,30 @@ main {
   font-size: var(--font-size-base);
 }
 
+.item-checkbox {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  cursor: pointer;
+  accent-color: var(--text-muted);
+}
+
+.course li.checked-off {
+  opacity: 0.45;
+}
+
+.course li.checked-off .item-quantity,
+.course li.checked-off .item-name {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
 .item-notes {
   font-size: var(--font-size-sm);
   color: var(--text-muted);
   font-style: italic;
   margin-top: var(--space-1);
-  padding-left: calc(var(--space-4) + 0.125rem);
+  padding-left: calc(15px + var(--space-1) + var(--space-4) + 0.125rem);
 }
 
 .sent-tag {

@@ -112,6 +112,15 @@ function renderOrders(orders, selectedDate) {
         const mainLine = document.createElement('div');
         mainLine.className = 'item-main';
 
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'item-checkbox';
+        checkbox.setAttribute('aria-label', `Mark ${item.dish} as done`);
+        checkbox.addEventListener('change', () => {
+          li.classList.toggle('checked-off', checkbox.checked);
+        });
+        mainLine.appendChild(checkbox);
+
         const quantity = document.createElement('span');
         quantity.className = 'item-quantity';
         quantity.textContent = `${item.qty}x`;
