@@ -54,6 +54,13 @@ body {
   margin: 0;
   font-family: var(--font-family);
   background-color: var(--primary-bg);
+  background-image:
+    linear-gradient(rgba(15, 23, 42, 0.72), rgba(15, 23, 42, 0.72)),
+    url('assets/Gratine-painting-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   color: var(--text-primary);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -61,7 +68,7 @@ body {
 }
 
 header {
-  background: linear-gradient(180deg, #1E3E62 0%, #1E3E88 100%);
+  background: linear-gradient(180deg, #bd4700 0%, #FF9500 100%);
   border-bottom: 1px solid var(--border);
   padding: var(--space-4) var(--space-4);
   text-align: center;
@@ -116,7 +123,7 @@ main {
 }
 
 .booking-header {
-  background: #3b7171;
+  background: #327979;
   padding: 6px 8px;
   border-bottom: 1px solid var(--border);
 }
