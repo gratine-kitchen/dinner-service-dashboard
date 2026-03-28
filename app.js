@@ -72,7 +72,6 @@ function renderOrders(orders, selectedDate) {
     header.innerHTML = `
       <div class="booking-title-row">
         <h2>${booking.guestName}</h2>
-        <span class="booking-id">#${booking.bookingId}</span>
       </div>
       <div class="meta">
         <span class="meta-item">${booking.time || 'TBD'}</span>
@@ -91,7 +90,7 @@ function renderOrders(orders, selectedDate) {
         <h4>Special Requests</h4>
         <p>${booking.specialRequest || booking.remarks}</p>
       `;
-      bookingSection.appendChild(specialDiv);
+      header.appendChild(specialDiv);
     }
 
     // Course sections
