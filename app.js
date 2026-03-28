@@ -199,10 +199,11 @@ function renderOrders(orders, selectedDate) {
       li.appendChild(mainLine);
 
       // Notes/remarks
-      if (item.remarks) {
+      const trimmedRemarks = typeof item.remarks === 'string' ? item.remarks.trim() : '';
+      if (trimmedRemarks) {
         const notes = document.createElement('div');
         notes.className = 'item-notes';
-        notes.textContent = item.remarks;
+        notes.textContent = trimmedRemarks;
         li.appendChild(notes);
       }
 
