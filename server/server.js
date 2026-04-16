@@ -128,6 +128,13 @@ app.get('/api/orders/upcoming', async (req, res) => {
   try {
     const orders = await fetchAndTransformOrders();
 
+    const toYmd = (dateObj) => {
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
     const normalizeDate = (dateStr) => {
       const parsed = new Date(dateStr);
       if (!Number.isNaN(parsed.getTime())) {
@@ -147,6 +154,28 @@ app.get('/api/orders/upcoming', async (req, res) => {
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+
+    // If a specific date was requested, filter to that date only
+    if (req.query.date) {
+      const parts = String(req.query.date).split('-').map((p) => Number(p));
+      if (parts.length === 3 && parts.every((p) => Number.isInteger(p))) {
+        const [year, month, day] = parts;
+        const requestedDate = new Date(year, month - 1, day);
+        requestedDate.setHours(0, 0, 0, 0);
+        const ordersWithDate = orders
+          .map((order) => ({ ...order, parsedDate: normalizeDate(order.date) }))
+          .filter((order) => order.parsedDate);
+        const filtered = ordersWithDate.filter(
+          (o) => o.parsedDate.getTime() === requestedDate.getTime()
+        );
+        return res.json({
+          success: true,
+          data: filtered,
+          selectedDate: toYmd(requestedDate),
+          timestamp: new Date().toISOString()
+        });
+      }
+    }
 
     const ordersWithDate = orders
       .map((order) => ({ ...order, parsedDate: normalizeDate(order.date) }))
@@ -172,7 +201,7 @@ app.get('/api/orders/upcoming', async (req, res) => {
     res.json({
       success: true,
       data: selectedOrders,
-      selectedDate: selectedDate.toISOString().slice(0, 10),
+      selectedDate: toYmd(selectedDate),
       timestamp: new Date().toISOString()
     });
   } catch (error) {

@@ -96,6 +96,24 @@ function formatDate(dateStr) {
   return date.toLocaleDateString('en-US', options);
 }
 
+function normalizeToYmd(dateStr) {
+  if (!dateStr || typeof dateStr !== 'string') return null;
+
+  const ymdMatch = dateStr.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (ymdMatch) {
+    const [, y, m, d] = ymdMatch;
+    return `${y}-${String(Number(m)).padStart(2, '0')}-${String(Number(d)).padStart(2, '0')}`;
+  }
+
+  const mdYMatch = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (mdYMatch) {
+    const [, m, d, y] = mdYMatch;
+    return `${y}-${String(Number(m)).padStart(2, '0')}-${String(Number(d)).padStart(2, '0')}`;
+  }
+
+  return null;
+}
+
 async function markItemSent(bookingId, course, itemIndex) {
   try {
     const response = await apiFetch(`/api/orders/${bookingId}/courses/${encodeURIComponent(course)}/items/${itemIndex}/sent`, {
@@ -288,13 +306,37 @@ async function loadOrders() {
   showLoading();
 
   try {
-    const response = await apiFetch('/api/orders/upcoming');
+    const datePicker = document.getElementById('date-picker');
+    const selectedDate = datePicker && datePicker.value ? datePicker.value : null;
+    const url = selectedDate
+      ? `/api/orders/upcoming?date=${encodeURIComponent(selectedDate)}`
+      : '/api/orders/upcoming';
+    const response = await apiFetch(url);
     const payload = await response.json();
     if (!payload.success) {
       throw new Error(payload.error || 'API returned an error');
     }
 
-    renderOrders(payload.data, payload.selectedDate);
+    let ordersToRender = payload.data || [];
+    let dateForHeader = payload.selectedDate || null;
+
+    // Fallback for older backend deploys that ignore ?date= requests.
+    if (selectedDate && normalizeToYmd(payload.selectedDate) !== selectedDate) {
+      const allOrdersResponse = await apiFetch('/api/orders');
+      const allOrdersPayload = await allOrdersResponse.json();
+      if (!allOrdersPayload.success) {
+        throw new Error(allOrdersPayload.error || 'API returned an error');
+      }
+      const allOrders = allOrdersPayload.data || [];
+      ordersToRender = allOrders.filter((order) => normalizeToYmd(order.date) === selectedDate);
+      dateForHeader = selectedDate;
+    }
+
+    if (!selectedDate && ordersToRender.length > 0) {
+      dateForHeader = normalizeToYmd(ordersToRender[0].date) || dateForHeader;
+    }
+
+    renderOrders(ordersToRender, dateForHeader);
   } catch (error) {
     console.error('Failed to load orders', error);
     showError(`Unable to load orders: ${error.message}`);
@@ -304,6 +346,18 @@ async function loadOrders() {
 document.addEventListener('DOMContentLoaded', () => {
   loadOrders();
   loadVersionInfo();
+
+  const loadBtn = document.getElementById('load-date-btn');
+  if (loadBtn) {
+    loadBtn.addEventListener('click', () => loadOrders());
+  }
+
+  const datePicker = document.getElementById('date-picker');
+  if (datePicker) {
+    datePicker.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') loadOrders();
+    });
+  }
 });
 
 // Keep backend alive by pinging it every 10 minutes (only in production)

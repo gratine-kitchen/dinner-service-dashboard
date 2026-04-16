@@ -8,9 +8,14 @@
 </head>
 <body>
   <header>
-    <h1>Today's Bookings</h1>
+    <h1>Gratine Kitchen Mgmt System</h1>
     <p id="header-date">Kitchen order management system</p>
   </header>
+
+  <div id="date-controls">
+    <input type="date" id="date-picker" aria-label="Select date" />
+    <button id="load-date-btn">Load Bookings</button>
+  </div>
 
   <main id="dashboard" aria-live="polite">
     <div class="loading">Loading orders...</div>
