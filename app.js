@@ -1,9 +1,56 @@
 // app.js
-// Detect environment and set API_BASE_URL accordingly
-const API_BASE_URL = 
-  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:3000'  // Development
-    : 'https://dinner-service-backend-deoi.onrender.com';  // Production
+const PRODUCTION_API_BASE_URL = 'https://dinner-service-backend-deoi.onrender.com';
+
+function getApiBaseCandidates() {
+  const queryApiBase = new URLSearchParams(window.location.search).get('apiBase');
+  if (queryApiBase) {
+    return [queryApiBase.replace(/\/$/, '')];
+  }
+
+  const bases = [];
+  const hostname = window.location.hostname;
+  const isLocalHost = hostname === 'localhost' || hostname === '127.0.0.1';
+  const isFileProtocol = window.location.protocol === 'file:';
+
+  if (!isFileProtocol && window.location.origin && window.location.origin !== 'null') {
+    bases.push(window.location.origin);
+  }
+
+  if (isLocalHost || isFileProtocol) {
+    bases.push('http://localhost:3000');
+    bases.push('http://localhost:3001');
+  }
+
+  bases.push(PRODUCTION_API_BASE_URL);
+
+  return [...new Set(bases.map((base) => base.replace(/\/$/, '')))];
+}
+
+const API_BASE_CANDIDATES = getApiBaseCandidates();
+let ACTIVE_API_BASE = null;
+
+async function apiFetch(path, options = {}) {
+  const attempted = [];
+  const orderedBases = ACTIVE_API_BASE
+    ? [ACTIVE_API_BASE, ...API_BASE_CANDIDATES.filter((base) => base !== ACTIVE_API_BASE)]
+    : API_BASE_CANDIDATES;
+
+  for (const base of orderedBases) {
+    const url = `${base}${path}`;
+    try {
+      const response = await fetch(url, options);
+      if (response.ok) {
+        ACTIVE_API_BASE = base;
+        return response;
+      }
+      attempted.push(`${base} (HTTP ${response.status})`);
+    } catch (error) {
+      attempted.push(`${base} (${error.message})`);
+    }
+  }
+
+  throw new Error(`Failed to reach API endpoints: ${attempted.join(', ')}`);
+}
 
 const dashboard = document.getElementById('dashboard');
 const headerDate = document.getElementById('header-date');
@@ -29,11 +76,7 @@ function setVersionText(version, build) {
 
 async function loadVersionInfo() {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/status`);
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-
+    const response = await apiFetch('/api/status');
     const payload = await response.json();
     const version = payload.version || 'unknown';
     const build = payload.build || 'unknown';
@@ -55,13 +98,9 @@ function formatDate(dateStr) {
 
 async function markItemSent(bookingId, course, itemIndex) {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/orders/${bookingId}/courses/${encodeURIComponent(course)}/items/${itemIndex}/sent`, {
+    const response = await apiFetch(`/api/orders/${bookingId}/courses/${encodeURIComponent(course)}/items/${itemIndex}/sent`, {
       method: 'POST'
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
 
     const result = await response.json();
     if (result.success) {
@@ -249,11 +288,7 @@ async function loadOrders() {
   showLoading();
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/orders/upcoming`);
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status} ${response.statusText}`);
-    }
-
+    const response = await apiFetch('/api/orders/upcoming');
     const payload = await response.json();
     if (!payload.success) {
       throw new Error(payload.error || 'API returned an error');
@@ -272,9 +307,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Keep backend alive by pinging it every 10 minutes (only in production)
-if (API_BASE_URL.includes('render.com')) {
+if (API_BASE_CANDIDATES.some((base) => base.includes('render.com'))) {
   setInterval(() => {
-    fetch(`${API_BASE_URL}/api/status`).catch(() => {
+    fetch(`${PRODUCTION_API_BASE_URL}/api/status`).catch(() => {
       // Silent fail - this is just a keep-alive ping
     });
   }, 10 * 60 * 1000);
